@@ -1,6 +1,4 @@
-// prisma.service.ts
 import { PrismaClient } from '@prisma/client'
-import { Decimal } from '@prisma/client/runtime/library'
 
 class PrismaService {
 	private prisma_: PrismaClient
@@ -9,79 +7,36 @@ class PrismaService {
 		this.prisma_ = new PrismaClient()
 	}
 
-	async listProducts(minPrice?: number, maxPrice?: number) {
+	async listProducts(sortBy?: 'price_asc' | 'price_desc' | 'created_at') {
 		try {
-			const where: any = {}
+			let orderClause = 'ORDER BY p.created_at DESC'
 
-			if (minPrice !== undefined || maxPrice !== undefined) {
-				where.product_variant = {
-					some: {
-						product_variant_price_set: {
-							some: {
-								price_set: {
-									price: {
-										some: {
-											amount: {
-												...(minPrice && { gte: new Decimal(minPrice) }),
-												...(maxPrice && { lte: new Decimal(maxPrice) }),
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-				}
+			if (sortBy === 'price_asc') {
+				orderClause = 'ORDER BY min_price ASC'
+			} else if (sortBy === 'price_desc') {
+				orderClause = 'ORDER BY min_price DESC'
 			}
 
-			const products = await this.prisma_.product.findMany({
-				where,
-				include: {
-					product_variant: {
-						include: {
-							product_variant_price_set: {
-								include: {
-									price_set: {
-										include: {
-											price: {
-												orderBy: {
-													amount: 'asc',
-												},
-												take: 1,
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-					images: true,
-				},
-				take: 10,
-			})
+			const query = `
+                SELECT 
+                    p.*,
+                    MIN(pr.amount) as min_price
+                FROM product p
+                LEFT JOIN product_variant pv ON p.id = pv.product_id
+                LEFT JOIN product_variant_price_set pvps ON pv.id = pvps.variant_id
+                LEFT JOIN price_set ps ON pvps.price_set_id = ps.id
+                LEFT JOIN price pr ON ps.id = pr.price_set_id
+                GROUP BY p.id
+                ${orderClause}
+                LIMIT 10
+            `
+			const products = await this.prisma_.$queryRawUnsafe(query)
 
-			return products.map(product => ({
-				...product,
-				price: this.getCheapestPrice(product),
-			}))
+			return products
 		} catch (error) {
 			console.error('Prisma error:', error)
 			throw error
 		}
-	}
-
-	private getCheapestPrice(product: any) {
-		if (!product.product_variant?.length) return null
-
-		const prices = product.product_variant
-			.flatMap(
-				(v: any) =>
-					v.product_variant_price_set?.[0]?.price_set?.price?.[0]?.amount
-			)
-			.filter(Boolean)
-			.map((p: Decimal) => p.toNumber())
-
-		return prices.length ? Math.min(...prices) : null
 	}
 }
 
