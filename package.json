@@ -32,6 +32,7 @@
 		"@mikro-orm/postgresql": "6.4.3",
 		"@prisma/client": "^6.6.0",
 		"awilix": "^8.0.1",
+		"medusa-plugin-meilisearch": "^2.0.11",
 		"meilisearch": "^0.36.0",
 		"pg": "^8.13.0",
 		"prisma": "^6.6.0"

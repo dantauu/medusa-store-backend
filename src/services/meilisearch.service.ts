@@ -10,11 +10,41 @@ class MeilisearchService {
 			apiKey: process.env.MEILISEARCH_API_KEY || 'masterKey',
 		})
 		this.index = 'products'
+		this.initializeIndex()
 	}
 
-	async listProducts(sortBy?: 'price_asc' | 'price_desc' | 'created_at') {
+	private async initializeIndex() {
 		try {
-			let sort = ['created_at:desc']
+			// Проверяем существует ли индекс
+			await this.client.getIndex(this.index)
+		} catch (error) {
+			if (error.code === 'index_not_found') {
+				// Создаем индекс если его нет
+				await this.client.createIndex(this.index, { primaryKey: 'id' })
+
+				// Настраиваем поисковые атрибуты
+				await this.client.index(this.index).updateSettings({
+					searchableAttributes: ['title', 'description', 'handle', 'tags'],
+					filterableAttributes: [
+						'region_id',
+						'variants.calculated_price',
+						'created_at',
+					],
+					sortableAttributes: ['variants.calculated_price', 'created_at'],
+				})
+			} else {
+				throw error
+			}
+		}
+	}
+
+	async listProducts(
+		sortBy?: 'price_asc' | 'price_desc' | 'created_at',
+		regionId?: string
+	) {
+		try {
+			let sort: string[] = ['created_at:desc']
+			let filter: string[] = []
 
 			if (sortBy === 'price_asc') {
 				sort = ['variants.calculated_price:asc']
@@ -22,8 +52,13 @@ class MeilisearchService {
 				sort = ['variants.calculated_price:desc']
 			}
 
+			if (regionId) {
+				filter = [`region_id = ${regionId}`]
+			}
+
 			const searchResults = await this.client.index(this.index).search('', {
 				sort,
+				filter,
 				limit: 100,
 				attributesToRetrieve: [
 					'id',
@@ -37,11 +72,12 @@ class MeilisearchService {
 					'tags',
 					'created_at',
 					'updated_at',
+					'region_id',
 				],
 			})
 
 			const products = searchResults.hits.map((product: any) => {
-				const variants = product.variants.map((variant: any) => ({
+				const variants = (product.variants || []).map((variant: any) => ({
 					id: variant.id,
 					title: variant.title,
 					inventory_quantity: variant.inventory_quantity || 0,
@@ -51,7 +87,7 @@ class MeilisearchService {
 					},
 				}))
 
-				const images = product.images.map((image: any) => ({
+				const images = (product.images || []).map((image: any) => ({
 					id: image.id,
 					url: image.url,
 				}))
@@ -68,6 +104,7 @@ class MeilisearchService {
 					tags: product.tags || [],
 					created_at: product.created_at,
 					updated_at: product.updated_at,
+					region_id: product.region_id,
 				}
 			})
 
@@ -78,17 +115,36 @@ class MeilisearchService {
 		}
 	}
 
+	async addProduct(product: any) {
+		try {
+			const document = {
+				...product,
+				variants: (product.variants || []).map((variant: any) => ({
+					...variant,
+					calculated_price: variant.calculated_price?.amount || 0,
+				})),
+			}
+
+			await this.client.index(this.index).addDocuments([document])
+			return document
+		} catch (error) {
+			console.error('Meilisearch add error:', error)
+			throw error
+		}
+	}
+
 	async updateProduct(product: any) {
 		try {
-			await this.client!.index(this.index).addDocuments([
-				{
-					...product,
-					variants: product.variants.map((variant: any) => ({
-						...variant,
-						calculated_price: variant.calculated_price?.amount || 0,
-					})),
-				},
-			])
+			const document = {
+				...product,
+				variants: (product.variants || []).map((variant: any) => ({
+					...variant,
+					calculated_price: variant.calculated_price?.amount || 0,
+				})),
+			}
+
+			await this.client.index(this.index).updateDocuments([document])
+			return document
 		} catch (error) {
 			console.error('Meilisearch update error:', error)
 			throw error
@@ -97,7 +153,8 @@ class MeilisearchService {
 
 	async deleteProduct(productId: string) {
 		try {
-			await this.client!.index(this.index).deleteDocument(productId)
+			await this.client.index(this.index).deleteDocument(productId)
+			return { id: productId }
 		} catch (error) {
 			console.error('Meilisearch delete error:', error)
 			throw error
