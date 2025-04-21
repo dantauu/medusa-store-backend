@@ -13,4 +13,26 @@ module.exports = defineConfig({
 			cookieSecret: process.env.COOKIE_SECRET || 'supersecret',
 		},
 	},
+	plugins: [
+		{
+			resolve: 'medusa-plugin-meilisearch',
+			options: {
+				config: {
+					host: process.env.MEILISEARCH_HOST || 'http://localhost:7700',
+					apiKey: process.env.MEILISEARCH_API_KEY || 'masterKey',
+				},
+				settings: {
+					products: {
+						searchableAttributes: ['title', 'description', 'handle', 'tags'],
+						filterableAttributes: [
+							'region_id',
+							'variants.calculated_price',
+							'created_at',
+						],
+						sortableAttributes: ['variants.calculated_price', 'created_at'],
+					},
+				},
+			},
+		},
+	],
 })

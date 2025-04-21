@@ -15,14 +15,11 @@ class MeilisearchService {
 
 	private async initializeIndex() {
 		try {
-			// Проверяем существует ли индекс
 			await this.client.getIndex(this.index)
 		} catch (error) {
 			if (error.code === 'index_not_found') {
-				// Создаем индекс если его нет
 				await this.client.createIndex(this.index, { primaryKey: 'id' })
 
-				// Настраиваем поисковые атрибуты
 				await this.client.index(this.index).updateSettings({
 					searchableAttributes: ['title', 'description', 'handle', 'tags'],
 					filterableAttributes: [
