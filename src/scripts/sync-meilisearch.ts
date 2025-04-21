@@ -11,7 +11,6 @@ async function syncProducts(container: any) {
 	})
 
 	try {
-		// Получаем все продукты
 		const products = await productModuleService.list(
 			{},
 			{
@@ -19,7 +18,6 @@ async function syncProducts(container: any) {
 			}
 		)
 
-		// Преобразуем продукты в формат для MeiliSearch
 		const documents = products.map(product => ({
 			id: product.id,
 			title: product.title,
@@ -42,7 +40,6 @@ async function syncProducts(container: any) {
 			region_id: product.region_id,
 		}))
 
-		// Добавляем документы в MeiliSearch
 		await meiliClient.index('products').addDocuments(documents)
 		console.log(
 			`Successfully synced ${documents.length} products to MeiliSearch`
