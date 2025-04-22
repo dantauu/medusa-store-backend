@@ -1,48 +1,22 @@
-import { MeiliSearch } from 'meilisearch'
 import { loadEnv } from '@medusajs/framework/utils'
 
 loadEnv(process.env.NODE_ENV || 'development', process.cwd())
 
 async function syncProducts(container: any) {
-	const productModuleService = container.resolve('productModuleService')
-	const meiliClient = new MeiliSearch({
-		host: process.env.MEILISEARCH_HOST || 'http://localhost:7700',
-		apiKey: process.env.MEILISEARCH_API_KEY || 'masterKey',
-	})
+	const meilisearchService = container.resolve('meilisearchService')
+	const productService = container.resolve('productService')
 
 	try {
-		const products = await productModuleService.list(
+		const products = await productService.list(
 			{},
 			{
 				relations: ['variants', 'images', 'tags'],
 			}
 		)
 
-		const documents = products.map(product => ({
-			id: product.id,
-			title: product.title,
-			handle: product.handle,
-			description: product.description,
-			thumbnail: product.thumbnail,
-			images: product.images?.map(img => ({
-				id: img.id,
-				url: img.url,
-			})),
-			variants: product.variants?.map(variant => ({
-				id: variant.id,
-				title: variant.title,
-				inventory_quantity: variant.inventory_quantity || 0,
-				calculated_price: variant.calculated_price?.amount || 0,
-			})),
-			tags: product.tags?.map(tag => tag.value),
-			created_at: product.created_at,
-			updated_at: product.updated_at,
-			region_id: product.region_id,
-		}))
-
-		await meiliClient.index('products').addDocuments(documents)
+		await meilisearchService.addDocuments(products)
 		console.log(
-			`Successfully synced ${documents.length} products to MeiliSearch`
+			`Successfully synced ${products.length} products to MeiliSearch`
 		)
 	} catch (error) {
 		console.error('Error syncing products to MeiliSearch:', error)

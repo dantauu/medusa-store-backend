@@ -15,7 +15,7 @@ module.exports = defineConfig({
 	},
 	plugins: [
 		{
-			resolve: 'medusa-plugin-meilisearch',
+			resolve: '@rokmohar/medusa-plugin-meilisearch',
 			options: {
 				config: {
 					host: process.env.MEILISEARCH_HOST || 'http://localhost:7700',
@@ -23,13 +23,32 @@ module.exports = defineConfig({
 				},
 				settings: {
 					products: {
-						searchableAttributes: ['title', 'description', 'handle', 'tags'],
-						filterableAttributes: [
+						type: 'products',
+						enabled: true,
+						fields: [
+							'id',
+							'title',
+							'description',
+							'handle',
+							'variant_sku',
+							'thumbnail',
 							'region_id',
-							'variants.calculated_price',
-							'created_at',
 						],
-						sortableAttributes: ['variants.calculated_price', 'created_at'],
+						indexSettings: {
+							searchableAttributes: ['title', 'description', 'variant_sku'],
+							displayedAttributes: [
+								'id',
+								'handle',
+								'title',
+								'description',
+								'variant_sku',
+								'thumbnail',
+								'region_id',
+							],
+							filterableAttributes: ['id', 'handle', 'region_id', 'price'],
+							sortableAttributes: ['title', 'created_at'],
+						},
+						primaryKey: 'id',
 					},
 				},
 			},

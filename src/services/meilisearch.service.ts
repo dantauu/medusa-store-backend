@@ -47,6 +47,8 @@ class MeilisearchService {
 				sort = ['variants.calculated_price:asc']
 			} else if (sortBy === 'price_desc') {
 				sort = ['variants.calculated_price:desc']
+			} else if (sortBy === 'created_at') {
+				sort = ['created_at:desc']
 			}
 
 			if (regionId) {
