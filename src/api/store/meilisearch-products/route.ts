@@ -6,12 +6,6 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
 	try {
 		const { order, limit = '12', offset = '0', region_id } = req.query
 
-		if (!region_id) {
-			return res.status(400).json({
-				error: 'Region ID is required',
-			})
-		}
-
 		let sortBy: 'price_asc' | 'price_desc' | 'created_at' | undefined
 		if (order === 'price_asc') {
 			sortBy = 'price_asc'
@@ -23,7 +17,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
 
 		const products = await meilisearchService.listProducts(
 			sortBy,
-			region_id as string
+			region_id as string | undefined
 		)
 
 		const parsedLimit = parseInt(limit as string, 10)

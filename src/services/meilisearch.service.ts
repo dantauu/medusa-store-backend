@@ -62,52 +62,70 @@ class MeilisearchService {
 				attributesToRetrieve: [
 					'id',
 					'title',
-					'handle',
+					'subtitle',
 					'description',
+					'handle',
+					'is_giftcard',
+					'discountable',
 					'thumbnail',
+					'collection_id',
+					'type_id',
+					'weight',
+					'length',
+					'height',
+					'width',
+					'hs_code',
+					'origin_country',
+					'mid_code',
+					'material',
+					'created_at',
+					'updated_at',
+					'options',
+					'tags',
 					'images',
 					'variants',
 					'metadata',
-					'tags',
-					'created_at',
-					'updated_at',
-					'region_id',
 				],
 			})
 
-			const products = searchResults.hits.map((product: any) => {
-				const variants = (product.variants || []).map((variant: any) => ({
-					id: variant.id,
-					title: variant.title,
-					inventory_quantity: variant.inventory_quantity || 0,
-					calculated_price: {
-						amount: variant.calculated_price || 0,
-						currency_code: 'usd',
-					},
-				}))
-
-				const images = (product.images || []).map((image: any) => ({
-					id: image.id,
-					url: image.url,
-				}))
-
-				return {
-					id: product.id,
-					title: product.title,
-					handle: product.handle,
-					description: product.description,
-					thumbnail: product.thumbnail,
-					images,
-					variants,
-					metadata: product.metadata || {},
-					tags: product.tags || [],
-					created_at: product.created_at,
-					updated_at: product.updated_at,
-					region_id: product.region_id,
-				}
-			})
-
-			return products
+			return searchResults.hits.map((product: any) => ({
+				...product,
+				weight: product.weight?.toString() || null,
+				length: product.length?.toString() || null,
+				height: product.height?.toString() || null,
+				width: product.width?.toString() || null,
+				type: null,
+				collection: null,
+				options: (product.options || []).map((option: any) => ({
+					...option,
+					values: (option.values || []).map((value: any) => ({
+						...value,
+						metadata: value.metadata || null,
+						deleted_at: value.deleted_at || null,
+					})),
+				})),
+				images: (product.images || []).map((image: any) => ({
+					...image,
+					metadata: image.metadata || null,
+					rank: image.rank || 0,
+					deleted_at: image.deleted_at || null,
+				})),
+				variants: (product.variants || []).map((variant: any) => ({
+					...variant,
+					weight: variant.weight?.toString() || null,
+					length: variant.length?.toString() || null,
+					height: variant.height?.toString() || null,
+					width: variant.width?.toString() || null,
+					options: (variant.options || []).map((option: any) => ({
+						...option,
+						option: {
+							...option.option,
+							metadata: option.option?.metadata || null,
+							deleted_at: option.option?.deleted_at || null,
+						},
+					})),
+				})),
+			}))
 		} catch (error) {
 			console.error('Meilisearch error:', error)
 			throw error
