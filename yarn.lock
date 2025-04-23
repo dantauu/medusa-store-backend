@@ -14380,7 +14380,7 @@ __metadata:
     supports-preserve-symlinks-flag: ^1.0.0
   bin:
     resolve: bin/resolve
-  checksum: 248365bdfa532aafa882cda0bcbc1d3967b9d161ee9857b03abc9d4eceff3796848480879fa80d933dfab37edb0072073336164afcb56e4e00a49a34786358c0
+  checksum: 8aac1e4e4628bd00bf4b94b23de137dd3fe44097a8d528fd66db74484be929936e20c696e1a3edf4488f37e14180b73df6f600992baea3e089e8674291f16c9d
   languageName: node
   linkType: hard
 
@@ -15486,7 +15486,7 @@ __metadata:
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 4542919eaceb44cb58322620032c802d8b51577a658b8d54ff6e58d280e3e6039b169b732d750d50c907ed016405bb89d124c7faa73f17a0c1962fbbf48dd059
+  checksum: 1b503525a88ff0ff5952e95870971c4fb2118c17364d60302c21935dedcd6c37e6a0a692f350892bafcef6f4a16d09073fe461158547978d2f16fbe4cb18581c
   languageName: node
   linkType: hard
 
