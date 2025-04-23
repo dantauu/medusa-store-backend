@@ -13,9 +13,9 @@ module.exports = defineConfig({
 			cookieSecret: process.env.COOKIE_SECRET || 'supersecret',
 		},
 	},
-	plugins: [
+	modules: [
 		{
-			resolve: '@rokmohar/medusa-plugin-meilisearch',
+			resolve: './src/modules/meilisearch',
 			options: {
 				config: {
 					host: process.env.MEILISEARCH_HOST || 'http://localhost:7700',
