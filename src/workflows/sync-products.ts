@@ -1,5 +1,5 @@
-import { createWorkflow, WorkflowResponse } from '@medusajs/workflows-sdk'
-import { syncProductsStep } from './steps/sync-products'
+import { createWorkflow, WorkflowResponse } from "@medusajs/workflows-sdk"
+import { syncProductsStep } from "./steps/sync-products"
 
 type SyncProductsWorkflowInput = {
   filters?: Record<string, unknown>
@@ -8,12 +8,12 @@ type SyncProductsWorkflowInput = {
 }
 
 export const syncProductsWorkflow = createWorkflow(
-  'sync-products',
+  "sync-products",
   ({ filters, limit, offset }: SyncProductsWorkflowInput) => {
     const { products } = syncProductsStep({ filters, limit, offset })
 
     return new WorkflowResponse({
       products,
     })
-  },
+  }
 )

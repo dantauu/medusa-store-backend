@@ -1,23 +1,23 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from "@prisma/client"
 
 class PrismaService {
-	private prisma_: PrismaClient
+  private prisma_: PrismaClient
 
-	constructor() {
-		this.prisma_ = new PrismaClient()
-	}
+  constructor() {
+    this.prisma_ = new PrismaClient()
+  }
 
-	async listProducts(sortBy?: 'price_asc' | 'price_desc' | 'created_at') {
-		try {
-			let orderClause = 'ORDER BY p.created_at DESC'
+  async listProducts(sortBy?: "price_asc" | "price_desc" | "created_at") {
+    try {
+      let orderClause = "ORDER BY p.created_at DESC"
 
-			if (sortBy === 'price_asc') {
-				orderClause = 'ORDER BY min_price ASC'
-			} else if (sortBy === 'price_desc') {
-				orderClause = 'ORDER BY min_price DESC'
-			}
+      if (sortBy === "price_asc") {
+        orderClause = "ORDER BY min_price ASC"
+      } else if (sortBy === "price_desc") {
+        orderClause = "ORDER BY min_price DESC"
+      }
 
-			const query = `
+      const query = `
                 SELECT 
                     p.*,
                     MIN(pr.amount) as min_price
@@ -30,14 +30,14 @@ class PrismaService {
                 ${orderClause}
                 LIMIT 10
             `
-			const products = await this.prisma_.$queryRawUnsafe(query)
+      const products = await this.prisma_.$queryRawUnsafe(query)
 
-			return products
-		} catch (error) {
-			console.error('Prisma error:', error)
-			throw error
-		}
-	}
+      return products
+    } catch (error) {
+      console.error("Prisma error:", error)
+      throw error
+    }
+  }
 }
 
 export default PrismaService

@@ -1,7 +1,5 @@
-import { defineMiddlewares } from '@medusajs/framework'
+import { defineMiddlewares } from "@medusajs/framework"
 
 export default defineMiddlewares({
-  routes: [
-
-  ],
+  routes: [],
 })

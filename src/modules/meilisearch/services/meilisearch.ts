@@ -1,11 +1,11 @@
-import { SearchTypes } from '@medusajs/types'
-import { SearchUtils } from '@medusajs/utils'
-import { MeiliSearch, Settings } from 'meilisearch'
-import { meilisearchErrorCodes, MeilisearchPluginOptions } from '../types'
-import { transformProduct } from '../utils/transformer'
+import { SearchTypes } from "@medusajs/types"
+import { SearchUtils } from "@medusajs/utils"
+import { MeiliSearch, Settings } from "meilisearch"
+import { meilisearchErrorCodes, MeilisearchPluginOptions } from "../types"
+import { transformProduct } from "../utils/transformer"
 
 export class MeiliSearchService extends SearchUtils.AbstractSearchService {
-  static identifier = 'index-meilisearch'
+  static identifier = "index-meilisearch"
 
   isDefault = false
 
@@ -19,13 +19,13 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
 
     if (!options.config?.apiKey) {
       throw Error(
-        'Meilisearch API key is missing in plugin config. See https://github.com/rokmohar/medusa-plugin-meilisearch',
+        "Meilisearch API key is missing in plugin config. See https://github.com/rokmohar/medusa-plugin-meilisearch"
       )
     }
 
     if (!options.config?.host) {
       throw Error(
-        'Meilisearch host is missing in plugin config. See https://github.com/rokmohar/medusa-plugin-meilisearch',
+        "Meilisearch host is missing in plugin config. See https://github.com/rokmohar/medusa-plugin-meilisearch"
       )
     }
 
@@ -44,7 +44,7 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
       })
 
     if (!fields.size) {
-      fields.add('*')
+      fields.add("*")
     }
 
     return Array.from(fields)
@@ -56,7 +56,10 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
       .map(([key]) => key)
   }
 
-  async createIndex(indexKey: string, options: Record<string, unknown> = { primaryKey: 'id' }) {
+  async createIndex(
+    indexKey: string,
+    options: Record<string, unknown> = { primaryKey: "id" }
+  ) {
     return await this.client_.createIndex(indexKey, options)
   }
 
@@ -65,13 +68,23 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
   }
 
   async addDocuments(indexKey: string, documents: any) {
-    const transformedDocuments = this.getTransformedDocuments(indexKey, documents)
-    return await this.client_.index(indexKey).addDocuments(transformedDocuments, { primaryKey: 'id' })
+    const transformedDocuments = this.getTransformedDocuments(
+      indexKey,
+      documents
+    )
+    return await this.client_
+      .index(indexKey)
+      .addDocuments(transformedDocuments, { primaryKey: "id" })
   }
 
   async replaceDocuments(indexKey: string, documents: any) {
-    const transformedDocuments = this.getTransformedDocuments(indexKey, documents)
-    return await this.client_.index(indexKey).addDocuments(transformedDocuments, { primaryKey: 'id' })
+    const transformedDocuments = this.getTransformedDocuments(
+      indexKey,
+      documents
+    )
+    return await this.client_
+      .index(indexKey)
+      .addDocuments(transformedDocuments, { primaryKey: "id" })
   }
 
   async deleteDocument(indexKey: string, documentId: string) {
@@ -88,16 +101,23 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
 
   async search(indexKey: string, query: string, options: Record<string, any>) {
     const { paginationOptions, filter, additionalOptions } = options
-    return await this.client_.index(indexKey).search(query, { filter, ...paginationOptions, ...additionalOptions })
+    return await this.client_
+      .index(indexKey)
+      .search(query, { filter, ...paginationOptions, ...additionalOptions })
   }
 
-  async updateSettings(indexKey: string, settings: SearchTypes.IndexSettings & Settings) {
+  async updateSettings(
+    indexKey: string,
+    settings: SearchTypes.IndexSettings & Settings
+  ) {
     const indexConfig = this.config_.settings?.[indexKey]
     if (indexConfig?.enabled === false) {
       return
     }
     await this.upsertIndex(indexKey, settings)
-    return await this.client_.index(indexKey).updateSettings(settings.indexSettings ?? {})
+    return await this.client_
+      .index(indexKey)
+      .updateSettings(settings.indexSettings ?? {})
   }
 
   async upsertIndex(indexKey: string, settings: SearchTypes.IndexSettings) {
@@ -110,7 +130,7 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
     } catch (error) {
       if (error.code === meilisearchErrorCodes.INDEX_NOT_FOUND) {
         await this.createIndex(indexKey, {
-          primaryKey: settings.primaryKey ?? 'id',
+          primaryKey: settings.primaryKey ?? "id",
         })
       }
     }

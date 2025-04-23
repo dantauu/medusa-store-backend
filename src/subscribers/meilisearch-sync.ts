@@ -1,10 +1,12 @@
-import { SubscriberArgs, type SubscriberConfig } from '@medusajs/framework'
-import { syncProductsWorkflow } from '../workflows/sync-products'
+import { SubscriberArgs, type SubscriberConfig } from "@medusajs/framework"
+import { syncProductsWorkflow } from "../workflows/sync-products"
 
-export default async function meilisearchSyncHandler({ container }: SubscriberArgs) {
-  const logger = container.resolve('logger')
+export default async function meilisearchSyncHandler({
+  container,
+}: SubscriberArgs) {
+  const logger = container.resolve("logger")
 
-  logger.info('Starting product indexing...')
+  logger.info("Starting product indexing...")
 
   const {
     result: { products },
@@ -16,5 +18,5 @@ export default async function meilisearchSyncHandler({ container }: SubscriberAr
 }
 
 export const config: SubscriberConfig = {
-  event: 'meilisearch.sync',
+  event: "meilisearch.sync",
 }

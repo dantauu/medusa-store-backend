@@ -1,5 +1,5 @@
-import { SubscriberArgs, SubscriberConfig } from '@medusajs/framework'
-import productDeletedWorkflow from '../workflows/product-deleted'
+import { SubscriberArgs, SubscriberConfig } from "@medusajs/framework"
+import productDeletedWorkflow from "../workflows/product-deleted"
 
 export default async function meilisearchProductDeletedHandler({
   event: { data },
@@ -13,5 +13,5 @@ export default async function meilisearchProductDeletedHandler({
 }
 
 export const config: SubscriberConfig = {
-  event: 'product.deleted',
+  event: "product.deleted",
 }

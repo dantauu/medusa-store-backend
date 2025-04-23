@@ -1,8 +1,8 @@
-import { SearchTypes } from '@medusajs/types'
-import { Config } from 'meilisearch'
+import { SearchTypes } from "@medusajs/types"
+import { Config } from "meilisearch"
 
 export const meilisearchErrorCodes = {
-  INDEX_NOT_FOUND: 'index_not_found',
+  INDEX_NOT_FOUND: "index_not_found",
 }
 
 export interface MeilisearchPluginOptions {
