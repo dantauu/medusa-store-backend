@@ -26,6 +26,7 @@ module.exports = defineConfig({
 						type: 'products',
 						enabled: true,
 						fields: [
+							// Индексация нужных полей
 							'id',
 							'title',
 							'subtitle',

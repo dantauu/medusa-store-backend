@@ -88,6 +88,8 @@ class MeilisearchService {
 				],
 			})
 
+			console.log('Raw MeiliSearch search response:', searchResults)
+
 			return searchResults.hits.map((product: any) => ({
 				...product,
 				weight: product.weight?.toString() || null,
@@ -142,7 +144,10 @@ class MeilisearchService {
 				})),
 			}
 
-			await this.client.index(this.index).addDocuments([document])
+			const rawAddResponse = await this.client
+				.index(this.index)
+				.addDocuments([document])
+			console.log('Raw MeiliSearch addDocuments response:', rawAddResponse)
 			return document
 		} catch (error) {
 			console.error('Meilisearch add error:', error)
@@ -160,7 +165,13 @@ class MeilisearchService {
 				})),
 			}
 
-			await this.client.index(this.index).updateDocuments([document])
+			const rawUpdateResponse = await this.client
+				.index(this.index)
+				.updateDocuments([document])
+			console.log(
+				'Raw MeiliSearch updateDocuments response:',
+				rawUpdateResponse
+			)
 			return document
 		} catch (error) {
 			console.error('Meilisearch update error:', error)
@@ -170,7 +181,10 @@ class MeilisearchService {
 
 	async deleteProduct(productId: string) {
 		try {
-			await this.client.index(this.index).deleteDocument(productId)
+			const rawDeleteResponse = await this.client
+				.index(this.index)
+				.deleteDocument(productId)
+			console.log('Raw MeiliSearch deleteDocument response:', rawDeleteResponse)
 			return { id: productId }
 		} catch (error) {
 			console.error('Meilisearch delete error:', error)

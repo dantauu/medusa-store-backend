@@ -1,6 +1,5 @@
 import { MedusaContainer } from '@medusajs/medusa'
 import { MeiliSearch } from 'meilisearch'
-import { loadEnv } from '@medusajs/framework/utils'
 
 interface Env {
 	MEILISEARCH_HOST?: string
@@ -136,7 +135,6 @@ async function syncProducts(container: MedusaContainer) {
 			metadata: product.metadata,
 		}))
 
-		// Добавляем документы в индекс
 		const index = client.index('products')
 		await index.addDocuments(documents)
 
