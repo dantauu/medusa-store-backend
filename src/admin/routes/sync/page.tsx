@@ -1,25 +1,27 @@
 import { Button, Container, Heading } from "@medusajs/ui"
-import { useMutation } from "@tanstack/react-query"
+import { useState } from "react"
 import { toast } from "@medusajs/ui"
 import { defineRouteConfig } from "@medusajs/admin-sdk"
 
 const SyncPage = () => {
-  const { mutate, isPending } = useMutation({
-    mutationFn: () =>
-      fetch("/admin/meilisearch/sync", {
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleSync = async () => {
+    setIsLoading(true)
+    try {
+      const response = await fetch("/admin/meilisearch/sync", {
         method: "POST",
-      }),
-    onSuccess: () => {
+      })
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
       toast.success("Successfully triggered data sync to Meilisearch")
-    },
-    onError: (err) => {
+    } catch (err) {
       console.error(err)
       toast.error("Failed to sync data to Meilisearch")
-    },
-  })
-
-  const handleSync = () => {
-    mutate()
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -29,7 +31,7 @@ const SyncPage = () => {
         <p className="text-gray-500">
           Manually trigger synchronization with Meilisearch.
         </p>
-        <Button onClick={handleSync} isLoading={isPending} variant="primary">
+        <Button onClick={handleSync} isLoading={isLoading} variant="primary">
           Sync Now
         </Button>
       </div>

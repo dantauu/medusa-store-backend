@@ -11,5 +11,4 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
     message: "Syncing data to Meilisearch",
   })
 }
-
 export const AUTHENTICATE = false

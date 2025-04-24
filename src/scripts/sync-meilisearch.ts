@@ -1,4 +1,5 @@
 import { MedusaContainer } from "@medusajs/medusa"
+import getProducts from "./products"
 import { MeiliSearch } from "meilisearch"
 
 interface Env {
@@ -18,6 +19,10 @@ async function syncProducts(container: MedusaContainer) {
   })
 
   try {
+    const productsWithMin = await getProducts({ container, args: [] })
+    const minPriceMap = new Map<string, number>(
+      productsWithMin.map((p: any) => [p.id, p.minPrice])
+    )
     const productService = container.resolve(
       "productService"
     ) as ProductModuleService
@@ -133,6 +138,7 @@ async function syncProducts(container: MedusaContainer) {
         })),
       })),
       metadata: product.metadata,
+      minPrice: minPriceMap.get(product.id) ?? 0,
     }))
 
     const index = client.index("products")

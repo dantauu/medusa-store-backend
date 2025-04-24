@@ -60,4 +60,5 @@ export default async function getProducts({ container }: ExecArgs) {
   })
 
   console.log(productsWithMinPrice)
+  return productsWithMinPrice
 }

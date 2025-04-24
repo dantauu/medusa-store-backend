@@ -1,9 +1,17 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import MeilisearchService from "../../../services/meilisearch.service"
+import getProducts from "../../../scripts/products"
 
 export async function GET(req: MedusaRequest, res: MedusaResponse) {
   const meilisearchService = new MeilisearchService()
   try {
+    const productsWithMin = await getProducts({
+      container: req.scope,
+      args: [],
+    })
+    const minPriceMap = new Map<string, number>(
+      productsWithMin.map((p: any) => [p.id, p.minPrice])
+    )
     const { order, limit = "12", offset = "0", region_id } = req.query
 
     let sortBy: "price_asc" | "price_desc" | "created_at" | undefined
@@ -15,10 +23,15 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
       sortBy = "created_at"
     }
 
-    const products = await meilisearchService.listProducts(
+    let products = await meilisearchService.listProducts(
       sortBy,
       region_id as string | undefined
     )
+    // Добавляем minPrice к каждому продукту
+    products = products.map((p: any) => ({
+      ...p,
+      minPrice: minPriceMap.get(p.id) ?? null,
+    }))
 
     const parsedLimit = parseInt(limit as string, 10)
     const parsedOffset = parseInt(offset as string, 10)

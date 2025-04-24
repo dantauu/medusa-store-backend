@@ -1,4 +1,5 @@
 import { createStep, StepResponse } from "@medusajs/workflows-sdk"
+import getProducts from "../../scripts/products"
 import {
   MEILISEARCH_MODULE,
   MeiliSearchService,
@@ -18,6 +19,11 @@ export const syncProductsStep = createStep(
     const loggerService = container.resolve("logger")
     const meilisearchService: MeiliSearchService =
       container.resolve(MEILISEARCH_MODULE)
+
+    const productsWithMin = await getProducts({ container, args: [] })
+    const minPriceMap = new Map<string, number>(
+      productsWithMin.map((p: any) => [p.id, p.minPrice])
+    )
 
     const productFields = await meilisearchService.getFieldsForType(
       SearchUtils.indexTypes.PRODUCTS
@@ -39,12 +45,17 @@ export const syncProductsStep = createStep(
       },
     })
 
+    const productsWithExtras = products.map((p: any) => ({
+      ...p,
+      minPrice: minPriceMap.get(p.id) ?? 0,
+    }))
+
     const existingProductIds = new Set(
       (
         await Promise.all(
           productIndexes.map((index) =>
             meilisearchService.search(index, "", {
-              filter: `id IN [${products.map((p) => p.id).join(",")}]`,
+              filter: `id IN [${productsWithExtras.map((p) => p.id).join(",")}]`,
               attributesToRetrieve: ["id"],
             })
           )
@@ -55,12 +66,12 @@ export const syncProductsStep = createStep(
     )
 
     const productsToDelete = Array.from(existingProductIds).filter(
-      (id) => !products.some((p) => p.id === id)
+      (id) => !productsWithExtras.some((p) => p.id === id)
     )
 
     await Promise.all(
       productIndexes.map((index) =>
-        meilisearchService.addDocuments(index, products)
+        meilisearchService.addDocuments(index, productsWithExtras)
       )
     )
     await Promise.all(
@@ -70,7 +81,7 @@ export const syncProductsStep = createStep(
     )
 
     return new StepResponse({
-      products,
+      products: productsWithExtras,
     })
   }
 )
