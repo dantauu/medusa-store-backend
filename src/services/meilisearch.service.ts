@@ -19,20 +19,24 @@ class MeilisearchService {
     } catch (error) {
       if (error.code === "index_not_found") {
         await this.client.createIndex(this.index, { primaryKey: "id" })
-
-        await this.client.index(this.index).updateSettings({
-          searchableAttributes: ["title", "description", "handle", "tags"],
-          filterableAttributes: [
-            "region_id",
-            "variants.calculated_price",
-            "created_at",
-          ],
-          sortableAttributes: ["variants.calculated_price", "created_at"],
-        })
       } else {
         throw error
       }
     }
+    await this.client.index(this.index).updateSettings({
+      searchableAttributes: ["title", "description", "handle", "tags"],
+      filterableAttributes: [
+        "region_id",
+        "variants.calculated_price",
+        "created_at",
+        "minPrice",
+      ],
+      sortableAttributes: [
+        "minPrice",
+        "variants.calculated_price",
+        "created_at",
+      ],
+    })
   }
 
   async listProducts(
@@ -44,9 +48,9 @@ class MeilisearchService {
       let filter: string[] = []
 
       if (sortBy === "price_asc") {
-        sort = ["variants.calculated_price:asc"]
+        sort = ["minPrice:asc"]
       } else if (sortBy === "price_desc") {
-        sort = ["variants.calculated_price:desc"]
+        sort = ["minPrice:desc"]
       } else if (sortBy === "created_at") {
         sort = ["created_at:desc"]
       }
@@ -84,6 +88,7 @@ class MeilisearchService {
           "tags",
           "images",
           "variants",
+          "minPrice",
           "metadata",
         ],
       })

@@ -19,7 +19,7 @@ module.exports = defineConfig({
       options: {
         serve: true,
         autoRebuild: true,
-        path: "/app",
+        path: "app",
       },
     },
   ],

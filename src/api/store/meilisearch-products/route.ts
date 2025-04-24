@@ -12,14 +12,21 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     const minPriceMap = new Map<string, number>(
       productsWithMin.map((p: any) => [p.id, p.minPrice])
     )
-    const { order, limit = "12", offset = "0", region_id } = req.query
+    const {
+      order,
+      sortBy: sb,
+      limit = "12",
+      offset = "0",
+      region_id,
+    } = req.query
 
+    const rawSort = (order as string) || (sb as string)
     let sortBy: "price_asc" | "price_desc" | "created_at" | undefined
-    if (order === "price_asc") {
+    if (rawSort === "price_asc") {
       sortBy = "price_asc"
-    } else if (order === "price_desc") {
+    } else if (rawSort === "price_desc") {
       sortBy = "price_desc"
-    } else if (order === "created_at") {
+    } else if (rawSort === "created_at") {
       sortBy = "created_at"
     }
 
@@ -27,7 +34,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
       sortBy,
       region_id as string | undefined
     )
-    // Добавляем minPrice к каждому продукту
+    // Здесь мы добавляем minPrice к каждому продукту
     products = products.map((p: any) => ({
       ...p,
       minPrice: minPriceMap.get(p.id) ?? null,

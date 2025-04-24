@@ -142,6 +142,19 @@ async function syncProducts(container: MedusaContainer) {
     }))
 
     const index = client.index("products")
+    await index.updateSettings({
+      filterableAttributes: [
+        "region_id",
+        "variants.calculated_price",
+        "created_at",
+        "minPrice",
+      ],
+      sortableAttributes: [
+        "minPrice",
+        "variants.calculated_price",
+        "created_at",
+      ],
+    })
     await index.addDocuments(documents)
 
     console.log(
