@@ -1,17 +1,9 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import MeilisearchService from "../../../services/meilisearch.service"
-import getProducts from "../../../scripts/products"
 
 export async function GET(req: MedusaRequest, res: MedusaResponse) {
   const meilisearchService = new MeilisearchService()
   try {
-    const productsWithMin = await getProducts({
-      container: req.scope,
-      args: [],
-    })
-    const minPriceMap = new Map<string, number>(
-      productsWithMin.map((p: any) => [p.id, p.minPrice])
-    )
     const {
       order,
       sortBy: sb,
@@ -30,26 +22,17 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
       sortBy = "created_at"
     }
 
-    let products = await meilisearchService.listProducts(
-      sortBy,
-      region_id as string | undefined
-    )
-    // Здесь мы добавляем minPrice к каждому продукту
-    products = products.map((p: any) => ({
-      ...p,
-      minPrice: minPriceMap.get(p.id) ?? null,
-    }))
-
     const parsedLimit = parseInt(limit as string, 10)
     const parsedOffset = parseInt(offset as string, 10)
-    const paginatedProducts = products.slice(
-      parsedOffset,
-      parsedOffset + parsedLimit
+    const { products, total } = await meilisearchService.listProducts(
+      sortBy,
+      region_id as string | undefined,
+      parsedLimit,
+      parsedOffset
     )
-
     res.json({
-      products: paginatedProducts,
-      count: products.length,
+      products,
+      count: total,
     })
   } catch (error) {
     console.error("Error in GET /store/meilisearch-products:", error)

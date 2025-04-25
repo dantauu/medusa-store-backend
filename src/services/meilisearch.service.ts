@@ -26,7 +26,6 @@ class MeilisearchService {
     await this.client.index(this.index).updateSettings({
       searchableAttributes: ["title", "description", "handle", "tags"],
       filterableAttributes: [
-        "region_id",
         "variants.calculated_price",
         "created_at",
         "minPrice",
@@ -41,11 +40,12 @@ class MeilisearchService {
 
   async listProducts(
     sortBy?: "price_asc" | "price_desc" | "created_at",
-    regionId?: string
-  ) {
+    regionId?: string,
+    limit: number = 12,
+    offset: number = 0
+  ): Promise<{ products: any[]; total: number }> {
     try {
       let sort: string[] = ["created_at:desc"]
-      let filter: string[] = []
 
       if (sortBy === "price_asc") {
         sort = ["minPrice:asc"]
@@ -55,14 +55,10 @@ class MeilisearchService {
         sort = ["created_at:desc"]
       }
 
-      if (regionId) {
-        filter = [`region_id = ${regionId}`]
-      }
-
       const searchResults = await this.client.index(this.index).search("", {
         sort,
-        filter,
-        limit: 100,
+        limit,
+        offset,
         attributesToRetrieve: [
           "id",
           "title",
@@ -95,7 +91,7 @@ class MeilisearchService {
 
       console.log("Raw MeiliSearch search response:", searchResults)
 
-      return searchResults.hits.map((product: any) => ({
+      const mapped = searchResults.hits.map((product: any) => ({
         ...product,
         weight: product.weight?.toString() || null,
         length: product.length?.toString() || null,
@@ -133,6 +129,10 @@ class MeilisearchService {
           })),
         })),
       }))
+      return {
+        products: mapped,
+        total: searchResults.nbHits ?? searchResults.estimatedTotalHits,
+      }
     } catch (error) {
       console.error("Meilisearch error:", error)
       throw error
